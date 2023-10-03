@@ -42,7 +42,9 @@ def merge(arr, start, mid, end):
 		j += 1
 		k += 1
 	
-arr = [69, 10, 30, 2, 16, 8, 31, 22]
+# arr = [69, 10, 30, 2, 16, 8, 31, 22]
+arr = [10, 1, 5, 2, 3]
 print('정렬 전  :', arr)
 merge_sort(arr, 0, len(arr) - 1)
 print('정렬 후  :', arr)
+print(result)
