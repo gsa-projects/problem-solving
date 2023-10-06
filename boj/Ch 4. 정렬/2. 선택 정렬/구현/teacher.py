@@ -1,3 +1,5 @@
+from kit import sort_test
+
 def selection_sort(arr):
     n = len(arr)
 
@@ -8,10 +10,8 @@ def selection_sort(arr):
                 min_index = j
 
         arr[i], arr[min_index] = arr[min_index], arr[i]
-        print(f'step {i+1:02d} :', arr)
+        # print(f'step {i+1:02d} :', arr)
+    
+    return arr
 
-
-arr = [69, 10, 30, 2, 16, 8, 31, 22]
-print(' 정렬 전 :', arr)
-selection_sort(arr)
-print(' 정렬 후 :', arr)
+sort_test(selection_sort)
