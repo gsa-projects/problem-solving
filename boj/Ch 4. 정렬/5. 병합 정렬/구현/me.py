@@ -1,9 +1,6 @@
 from kit import sort_test
 
-def merge_sort(A, s=0, e=None):
-	if e is None:
-		e = len(A) - 1
-	
+def merge_sort(A, s, e):
 	if s < e:
 		mid = (s + e) // 2
 		merge_sort(A, s, mid)
@@ -29,7 +26,7 @@ def merge(A, s, m, e):
 	i = s
 	
 	while l < n_l and r < n_r:
-		if L[l] < R[r]:
+		if L[l] <= R[r]:    # note. 등호 필수 !!!!!!!!!!!!!!!!!!!!!!!!! 이래야 안정 정렬이 성립함.
 			A[i] = L[l]
 			l += 1
 		else:

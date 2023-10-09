@@ -1,3 +1,4 @@
+import inspect
 from time import time
 from random import shuffle
 
@@ -33,9 +34,10 @@ def sort_test(sort_function):
 	for i, (input_case, output_case) in enumerate(test_cases):
 		try:
 			input_copied = input_case.copy()
+			parameters = (input_copied, ) if len(inspect.signature(sort_function).parameters) == 1 else (input_copied, 0, len(input_copied) - 1)
 			
 			start_time = time()
-			got_data = sort_function(input_copied)
+			got_data = sort_function(*parameters)
 			end_time = time()
 			
 			duration = end_time - start_time
