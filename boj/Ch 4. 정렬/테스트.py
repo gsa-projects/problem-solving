@@ -1,14 +1,12 @@
 from kit import sort_test
 
-def quick_sort2(X):
-    if len(X) <= 1:
-        return X
+def bubble_sort(arr):
+    n = len(arr)
+    for i in range(n):
+        for j in range(n - i - 1):
+            if arr[j] > arr[j + 1]:
+                arr[j], arr[j + 1] = arr[j + 1], arr[j]
+    
+    return arr
 
-    pivot = X[len(X) // 2]
-    left = [x for x in X if x < pivot]
-    middle = [x for x in X if x == pivot]
-    right = [x for x in X if x > pivot]
-
-    return quick_sort2(left) + middle + quick_sort2(right)
-
-sort_test(quick_sort2)
+sort_test(bubble_sort)

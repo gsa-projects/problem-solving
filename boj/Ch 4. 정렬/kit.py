@@ -2,7 +2,7 @@ import inspect
 from time import time
 from random import shuffle
 
-very_long_case = list(range(1, 200_000))
+very_long_case = list(range(1, 20_000))
 shuffled_case = very_long_case.copy()
 shuffle(shuffled_case)
 
