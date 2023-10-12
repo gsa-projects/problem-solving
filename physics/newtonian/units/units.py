@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Tuple
 from ..utils import Vec
 
 @dataclass
@@ -70,19 +71,21 @@ class Unit:
 			return all(_s == _o for _s, _o in zip(self, other))
 		else:
 			return NotImplemented
-		
+	
 	def __repr__(self):
 		ret = "Unit("
 		for name, power in self:
 			if power == 0:
 				continue
-				
+			
 			ret += f"{name}={power}, "
 		ret = ret[:-2] + ")"
 		
 		return ret
-
+	
 	__str__ = __repr__
+
+Unit.dimensionless = Unit()
 
 class UnitError(Exception):
 	pass
@@ -121,9 +124,24 @@ class Quantity:
 	
 	def __eq__(self, other):
 		if isinstance(other, Quantity):
-			return self.value == other.value and self.dimension == other.dimension
+			if self.value == other.value:
+				return True if self.value == 0 else self.dimension == other.dimension
+		elif isinstance(other, int | float):
+			return self.value == 0 and other == 0
 		else:
 			return NotImplemented
+	
+	def __lt__(self, other):
+		if isinstance(other, Quantity):
+			if self.dimension == other.dimension:
+				return self.value < other.value
+			else:
+				raise UnitError(f"Cannot compare {self.dimension} and {other.dimension}.")
+		else:
+			return self.value < other
+	
+	def __gt__(self, other):
+		return other < self
 	
 	def __add__(self, other):
 		if isinstance(other, Quantity):
@@ -145,7 +163,11 @@ class Quantity:
 	
 	def __mul__(self, other):
 		if isinstance(other, Quantity):
-			return Quantity(self.value * other.value, self.dimension + other.dimension)
+			ret = Quantity(self.value * other.value, self.dimension + other.dimension)
+			if ret.dimension == Unit.dimensionless:
+				return ret.value
+			else:
+				return ret
 		elif isinstance(other, tuple):
 			return Quantity(self.value * Vec(other), self.dimension)
 		else:
@@ -179,6 +201,12 @@ class Quantity:
 		else:
 			yield self
 	
+	def __int__(self):
+		return int(self.value)
+	
+	def __float__(self):
+		return float(self.value)
+	
 	def is_vector(self):
 		return isinstance(self.value, Vec)
 	
@@ -206,14 +234,6 @@ class Quantity:
 		else:
 			raise TypeError("This quantity is not a vector.")
 
-kg = Quantity(1, Unit(kg=1))
-m = Quantity(1, Unit(m=1))
-s = Quantity(1, Unit(s=1))
-A = Quantity(1, Unit(A=1))
-K = Quantity(1, Unit(K=1))
-mol = Quantity(1, Unit(mol=1))
-cd = Quantity(1, Unit(cd=1))
-
 prefixs = {
 	'Y': 1e24,
 	'Z': 1e21,
@@ -236,4 +256,22 @@ prefixs = {
 	'y': 1e-24
 }
 
-__all__ = ["Unit", "UnitError", "Quantity", "kg", "m", "s", "A", "K", "mol", "cd", "prefixs"]
+kg = Quantity(1, Unit(kg=1))
+g = 1e-3 * kg
+m = Quantity(1, Unit(m=1))
+km = 1e3 * m
+cm = 1e-2 * m
+s = Quantity(1, Unit(s=1))
+ms = 1e-3 * s
+A = Quantity(1, Unit(A=1))
+mA = 1e-3 * A
+K = Quantity(1, Unit(K=1))
+mK = 1e-3 * K
+mol = Quantity(1, Unit(mol=1))
+mmol = 1e-3 * mol
+cd = Quantity(1, Unit(cd=1))
+
+__all__ = [
+	"Unit", "UnitError", "Quantity", "prefixs",
+	"kg", "g", "m", "km", "cm", "s", "ms", "A", "mA", "K", "mK", "mol", "mmol", "cd"
+]

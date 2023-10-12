@@ -99,7 +99,7 @@ class Vec[T]:
 	def __neg__(self):
 		return Vec(-self.x, -self.y)
 	
-	def __add__(self, other: ndarray):
+	def __add__(self, other):
 		if isinstance(other, Vec):
 			return Vec(self.x + other.x, self.y + other.y)
 		elif isinstance(other, ndarray):
@@ -112,13 +112,13 @@ class Vec[T]:
 			return NotImplemented
 	
 	def __radd__(self, other):
-		return self.__add__(other)
+		return self.__add__(Vec(other))
 	
 	def __sub__(self, other):
-		return self.__add__(-other)
+		return self.__add__(-Vec(other))
 	
 	def __rsub__(self, other):
-		return -(self.__add__(-other))
+		return -(self.__add__(-Vec(other)))
 	
 	def __mul__(self, other):
 		if isinstance(other, int | float):

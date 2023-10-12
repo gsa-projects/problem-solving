@@ -8,31 +8,34 @@ from abc import *
 __all__ = ['Space', 'Object']
 
 class Object(metaclass=ABCMeta):
-	def __init__(self, pos: Quantity, mass: Quantity = 1 * kg, acc: Quantity = (0, 0) * m/s**2):
+	def __init__(self, pos: Quantity, vel: Quantity = (0, 0)*m/s**2, acc: Quantity = (0, 0)*m/s**2, mass: Quantity = 1*kg):
 		if pos.unit != m or pos.is_scalar():
 			raise UnitError("Position must be vector in m.")
-		elif mass.unit != kg:
-			raise UnitError("Mass must be in kg.")
+		elif vel.unit != m/s or vel.is_scalar():
+			raise UnitError("Velocity must be vector in m/s.")
 		elif acc.unit != m/s**2:
 			raise UnitError("Acceleration must be vector in m/s^2.")
+		elif mass.unit != kg:
+			raise UnitError("Mass must be in kg.")
 		
 		self.pos = pos
-		self.last_pos = pos
+		self.pos_0 = pos
+		self.vel = vel
 		self.acc = acc
 		self.mass = mass
 		self.render_object = None
 	
 	@abstractmethod
-	def attr(self, **kw):
+	def config(self):
 		return self
 	
 	@abstractmethod
 	def update(self, space: "Space"):
-		return NotImplemented
+		self.render(space)
 	
 	@abstractmethod
 	def render(self, space: "Space"):
-		return NotImplemented
+		pass
 	
 	@abstractmethod
 	def __repr__(self) -> str:
@@ -41,39 +44,60 @@ class Object(metaclass=ABCMeta):
 	def __str__(self):
 		return self.__repr__()
 
-# todo: x-y 축 방향 재설정
+px = 1 * m
+
 class Space:
-	def __init__(self, size: Quantity, gravity: Quantity = (0, -0.1) * m / s ** 2, tps: int = 60, name: str = "Newtonian Space"):
-		if size.unit != m or size.is_scalar():
-			raise UnitError("Size must be vector in m.")
-		elif gravity.unit != m/s**2 or gravity.is_scalar():
+	def __init__(self, size: Tuple[int, int],
+	             zoom: float = 1,
+	             gravity: Quantity = (0, -9.80665)*m/s**2,
+	             tps: Quantity = 60/s):
+		if gravity.unit != m/s**2 or gravity.is_scalar():
 			raise UnitError("Gravity must be vector in m/s^2.")
 		
-		self.master = Tk(screenName=name)
-		self.canvas = Canvas(master=self.master, width=size.x.value, height=size.y.value)
+		"""
+		zoom이 1이면 1m가 1px인 상황임
+		zoom이 2면 1m가 2px인 상황임
+		"""
+		global px
+		px = m / zoom
+		
 		self.size = size
+		self.zoom = zoom
 		self.gravity = gravity
 		self.tps = tps
+		
+		self.__master = Tk()
+		self.__canvas = Canvas(master=self.__master, width=self.size[0], height=self.size[1])
 		self.__layers = Arrays()
 		
-		self.master.geometry(f"{size.x.value}x{size.y.value}")
-		self.canvas.pack()
+		self.__master.geometry(f"{self.size[0]}x{self.size[1]}")
+		self.__canvas.pack()
+	
+	def config(self, screen_name: str = 'Newtonian Space', screen_icon: str = None, bg_color: str = None):
+		if screen_name is not None:
+			self.__master.title(screen_name)
+		if screen_icon is not None:
+			self.__master.iconbitmap(screen_icon)
+		if bg_color is not None:
+			self.__canvas.config(bg=bg_color)
+		
+		return self
 	
 	@property
-	def width(self):
-		return self.size.x
+	def width(self) -> float:
+		return self.size[0]
 	
 	@property
-	def height(self):
-		return self.size.y
+	def height(self) -> float:
+		return self.size[1]
 	
 	def tick(self):
-		self.master.update()
-		sleep(1 / self.tps)
+		self.__master.update()
+		sleep((1 / self.tps) / s)
 	
 	def is_destroyed(self):
 		try:
-			return not self.master.winfo_exists()
+			return not self.__master.winfo_exists()
 		except TclError:
 			return True
 		
@@ -81,37 +105,52 @@ class Space:
 		if not (pos_0.unit != m and pos_0.is_vector() and pos_1.unit == m and pos_1.is_vector()):
 			raise UnitError("Position must be vector in m.")
 		
-		return self.canvas.create_line(pos_0.x.value, (self.height - pos_0.y).value, pos_1.x.value, (self.height - pos_1.y).value, *args, **kw)
+		pos_0 /= px
+		pos_1 /= px
+		
+		return self.__canvas.create_line(pos_0.x, self.height - pos_0.y, pos_1.x, self.height - pos_1.y.value, *args, **kw)
 	
 	def create_rectangle(self, pos_0: Quantity, pos_1: Quantity, *args, **kw) -> int:
 		if not (pos_0.unit == m and pos_0.is_vector() and pos_1.unit == m and pos_1.is_vector()):
 			raise UnitError("Position must be vector in m.")
 		
-		return self.canvas.create_rectangle(pos_0.x.value, (self.height - pos_0.y).value, pos_1.x.value, (self.height - pos_1.y).value, *args, **kw)
+		pos_0 /= px
+		pos_1 /= px
+		
+		return self.__canvas.create_rectangle(pos_0.x, self.height - pos_0.y, pos_1.x, self.height - pos_1.y, *args, **kw)
 	
 	def create_oval(self, pos_0: Quantity, pos_1: Quantity, *args, **kw) -> int:
 		if not (pos_0.unit == m and pos_0.is_vector() and pos_1.unit == m and pos_1.is_vector()):
 			raise UnitError("Position must be vector in m.")
 		
-		return self.canvas.create_oval(pos_0.x.value, (self.height - pos_0.y).value, pos_1.x.value, (self.height - pos_1.y).value, *args, **kw)
+		pos_0 /= px
+		pos_1 /= px
+		
+		return self.__canvas.create_oval(pos_0.x, self.height - pos_0.y, pos_1.x, self.height - pos_1.y, *args, **kw)
 	
 	def create_text(self, pos: Quantity, *args, **kw) -> int:
 		if not (pos.unit == m and pos.is_vector()):
 			raise UnitError("Position must be vector in m.")
 		
-		return self.canvas.create_text(pos.x.value, (self.height - pos.y).value, *args, **kw)
+		pos /= px
+		
+		return self.__canvas.create_text(pos.x, self.height - pos.y, *args, **kw)
 	
 	def create_polygon(self, pos_list: list[Quantity], *args, **kw) -> int:
 		if not all((pos.unit == m and pos.is_vector()) for pos in pos_list):
 			raise UnitError("Position must be vector in m.")
 		
-		return self.canvas.create_polygon(*((pos.x.value, (self.height - pos.y).value) for pos in pos_list), *args, **kw)
+		pos_list = [pos / px for pos in pos_list]
+		
+		return self.__canvas.create_polygon(*((pos.x, self.height - pos.y) for pos in pos_list), *args, **kw)
 	
 	def move(self, obj: Object, d_pos: Quantity):
 		if not (d_pos.unit == m and d_pos.is_vector()):
 			raise UnitError("Position must be vector in m.")
 		
-		self.canvas.move(obj.render_object, d_pos.x.value, -d_pos.y.value)
+		d_pos /= px
+		
+		self.__canvas.move(obj.render_object, d_pos.x, -d_pos.y)
 	
 	def __enter__(self):
 		return self.__layers
@@ -144,4 +183,3 @@ class Space:
 		for arr in self.__layers:
 			for obj in arr:
 				yield obj
-	
