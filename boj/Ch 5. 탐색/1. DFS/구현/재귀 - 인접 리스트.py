@@ -1,15 +1,24 @@
 from typing import TypeAlias, List
 
 Graph: TypeAlias = List[List[int]]
+# graph: Graph = [
+#     [],
+#     [2, 3],
+#     [1, 3],
+#     [1, 2, 5, 6],
+#     [5],
+#     [3, 4, 7],
+#     [3, 7],
+#     [5, 6]
+# ]
+
 graph: Graph = [
     [],
     [2, 3],
-    [1, 3],
-    [1, 2, 5, 6],
-    [5],
-    [3, 4, 7],
-    [3, 7],
-    [5, 6]
+    [1, 4, 5],
+    [1, 5],
+    [2],
+    [2, 3],
 ]
 
 def dfs(graph: Graph, now: int, visited: List[int]):
@@ -21,4 +30,4 @@ def dfs(graph: Graph, now: int, visited: List[int]):
         if not visited[w]:
             dfs(graph, w, visited)
 
-dfs(graph, 3, [False] * len(graph))
+dfs(graph, 1, [False] * len(graph))
