@@ -14,7 +14,7 @@ for _ in range(m):
     graph[a].append(b)
     graph[b].append(a)
 
-# 작은 것부터 방문해야 하므로 sort 해야됨
+# 문제 조건에 의해 작은 것부터 방문해야 하므로 sort 해야됨
 for i in range(n+1):
     graph[i].sort()
 
