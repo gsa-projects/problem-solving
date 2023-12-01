@@ -1,4 +1,8 @@
 from kit import sort_test
+from random import shuffle
+
+case = list(range(1, 10))
+shuffle(case)
 
 def insertion_sort(arr):
 	for i in range(1, len(arr)):
@@ -17,5 +21,5 @@ def insertion_sort_2(arr):
 			if arr[j] > arr[j + 1]:
 				arr[j], arr[j + 1] = arr[j + 1], arr[j]
 
-sort_test(insertion_sort)
+# sort_test(insertion_sort)
 sort_test(insertion_sort_2)
