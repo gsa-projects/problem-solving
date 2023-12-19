@@ -1,28 +1,44 @@
-from typing import TypeAlias, List
+Graph = list[list[int]]
+Visited = list[bool]
 
-Graph: TypeAlias = List[List[int]]
 graph: Graph = [
     [],
-    [2, 3],
-    [1, 3],
-    [1, 2, 5, 6],
-    [5],
-    [3, 4, 7],
-    [3, 7],
-    [5, 6]
+    [2, 3, 4],
+    [1, 4],
+    [1, 4],
+    [1, 2, 3]
 ]
 
-def dfs(graph: Graph, now: int):
-    visited = [False] * len(graph)
+# graph = [
+#     [],
+#     [2, 3],
+#     [1, 3],
+#     [1, 2, 5, 6],
+#     [5],
+#     [3, 4, 7],
+#     [3, 7],
+#     [5, 6]
+# ]
 
-    stack = [now]
-    visited[now] = True
-    print(now, end=' ')
+def dfs_recursive(g: Graph, v: int, V: Visited):
+    V[v] = True
+    print(v, end=' ')
+
+    for w in sorted(g[v]):
+        if not V[w]:
+            dfs_recursive(g, w, V)
+
+def dfs_stack(g: Graph, v: int):
+    visited = [False] * len(g)
+
+    stack = [v]
+    visited[v] = True
+    print(v, end=' ')
 
     while stack:
         back = True
 
-        for w in graph[stack[-1]]:
+        for w in sorted(g[stack[-1]]):
             if not visited[w]:
                 back = False
 
@@ -30,26 +46,28 @@ def dfs(graph: Graph, now: int):
                 visited[w] = True
                 print(w, end=' ')
 
-                break       # tqqqqqqqqqqqqq
+                break
 
         if back:
             stack.pop()
 
-def dfs_enhanced(graph: Graph, now: int):
-    visited = [False] * len(graph)
+def dfs_stack2(g: Graph, v: int):
+    visited = [False] * len(g)
 
-    stack = [now]
-    visited[now] = True
+    stack = [v]
+    visited[v] = True
 
     while stack:
         top = stack.pop()
         print(top, end=' ')
 
-        for w in reversed(graph[top]):      # 쌤은 sorted(reverse=True) 으로 하심
+        for w in sorted(g[top], reverse=True):
             if not visited[w]:
                 stack.append(w)
                 visited[w] = True
 
-dfs(graph, 3)
+dfs_recursive(graph, 1, [False] * len(graph))
 print()
-dfs_enhanced(graph, 3)
+dfs_stack(graph, 1)
+print()
+dfs_stack2(graph, 1)
